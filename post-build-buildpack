@@ -22,7 +22,8 @@ post-build-buildpack() {
   dokku_log_info1 'Injecting GPG keys...'
 
   APP_OWNER=$(docker run --rm -e HOME=/app $IMAGE stat -c %U /app)
-  ID=$(docker run -e KEYS="$KEYS" -e HOME=/app -e APP_OWNER="$APP_OWNER" -d $IMAGE setuidgid "$APP_OWNER" /bin/bash -c 'echo "$KEYS" | gpg --import')
+  ID=$(docker run -e KEYS="$KEYS" -e HOME=/app -e APP_OWNER="$APP_OWNER" -d $IMAGE setuidgid "$APP_OWNER" /bin/bash -c 'echo "$KEYS" | gpg --import --no-tty --batch --yes')
+  test $(docker wait $ID) -eq 0
   local OUTPUT=$(docker commit $ID $IMAGE)
 
   dokku_log_verbose_quiet "$OUTPUT"
